@@ -48,7 +48,7 @@ async function generateDailyImage() {
 }
 
 export async function POST(request) {
-  // Check if this is a cron job request or if we need to regenerate the image
+  // Check if this is a cron job request
   const authHeader = request.headers.get('authorization');
   const isCronJob = authHeader === `Bearer ${process.env.CRON_SECRET}`;
   
@@ -61,16 +61,18 @@ export async function POST(request) {
     (Date.now() - lastGenerationTimestamp > 24 * 60 * 60 * 1000);
 
   try {
-    if (shouldRegenerateImage) {
-      const imageUrl = await generateDailyImage();
-      return NextResponse.json({ success: true, imageUrl });
+    // If it's not a cron job and we have a recent image, return it
+    if (!isCronJob && lastGeneratedImageUrl && 
+        (Date.now() - lastGenerationTimestamp <= 24 * 60 * 60 * 1000)) {
+      return NextResponse.json({ 
+        success: true, 
+        imageUrl: lastGeneratedImageUrl 
+      });
     }
 
-    // Return existing image if it's still fresh
-    return NextResponse.json({ 
-      success: true, 
-      imageUrl: lastGeneratedImageUrl 
-    });
+    // Generate a new image
+    const imageUrl = await generateDailyImage();
+    return NextResponse.json({ success: true, imageUrl });
   } catch (error) {
     console.error("Error in image generation:", error);
     return NextResponse.json({ 

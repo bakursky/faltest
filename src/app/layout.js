@@ -21,7 +21,6 @@ export const metadata = {
 export default async function RootLayout({ children }) {
   let imageUrl = "/default-background.jpg"; // Fallback background
   try {
-    // Use the full absolute URL including the protocol and domain
     const apiUrl = process.env.NEXT_PUBLIC_SITE_URL || 
                    process.env.VERCEL_URL ? 
                    `https://${process.env.VERCEL_URL}` : 
@@ -34,6 +33,7 @@ export default async function RootLayout({ children }) {
     const res = await fetch(fullApiUrl, {
       method: "POST",
       cache: "no-store",
+      // Remove any authorization headers for regular requests
     });
 
     if (!res.ok) {
@@ -49,6 +49,8 @@ export default async function RootLayout({ children }) {
     console.error("Error fetching image:", error);
     // Will use default background image
   }
+
+
 
   return (
     <html lang="en">

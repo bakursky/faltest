@@ -21,10 +21,18 @@ export const metadata = {
 export default async function RootLayout({ children }) {
   let imageUrl = "/default-background.jpg"; // Fallback background
   try {
-    const apiUrl = process.env.API_URL || "http://localhost:3000";
-    const res = await fetch(`${apiUrl}/api/generate-image`, {
+    // Use the full absolute URL including the protocol and domain
+    const apiUrl = process.env.NEXT_PUBLIC_SITE_URL || 
+                   process.env.VERCEL_URL ? 
+                   `https://${process.env.VERCEL_URL}` : 
+                   "http://localhost:3000";
+
+    const fullApiUrl = `${apiUrl}/api/generate-image`;
+
+    console.log("Attempting to fetch image from:", fullApiUrl);
+
+    const res = await fetch(fullApiUrl, {
       method: "POST",
-      // Add cache-busting to ensure fresh request
       cache: "no-store",
     });
 
